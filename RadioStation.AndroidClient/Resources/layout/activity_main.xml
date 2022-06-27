@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/info_text"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_marginHorizontal="10dp"
+        android:text="Conectando..."
+        android:textSize="25sp"
+        android:singleLine="true"
+        android:textColor="#000000"
+        android:gravity="center"
+        android:ellipsize="marquee"
+        android:scrollHorizontally="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        />
+
+    <ImageButton
+        android:id="@+id/btn_play_pause"
+        android:layout_width="match_parent"
+        android:layout_height="600px"
+        android:layout_centerInParent="true"
+        android:scaleType="fitCenter"
+        android:src="@mipmap/ic_play_btn"
+        android:background="#00FFFFFF"
+        android:tint="#000000"/>
+
+</RelativeLayout>

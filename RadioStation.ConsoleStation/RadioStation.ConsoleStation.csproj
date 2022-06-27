@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <AssemblyName>RadioStation</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.1.0" />
+    <PackageReference Include="NAudio.Lame" Version="2.0.1" />
+    <PackageReference Include="Sharplus" Version="1.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\JOSE\.nuget\packages\naudio.lame\2.0.0\build\libmp3lame.64.dll" Link="libmp3lame.64.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\JOSE\.nuget\packages\naudio.lame\2.0.0\build\libmp3lame.32.dll" Link="libmp3lame.32.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="Resources\Environment.env">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Environment.env</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="libmp3lame.32.dll" Visible="false" />
+    <None Include="libmp3lame.64.dll" Visible="false" />
+  </ItemGroup>
+
+</Project>
