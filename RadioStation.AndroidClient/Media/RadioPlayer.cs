@@ -18,6 +18,7 @@ namespace RadioStation.AndroidClient.Media
 {
     public class RadioPlayer : IDisposable
     {
+        private const int CONNECTION_TIMEOUT = 30000; //milliseconds
         private const int METADATA_DURATION = 100; // milliseconds
         private static readonly TimeSpan RETRY_DELAY = TimeSpan.FromSeconds(1);
 
@@ -34,7 +35,7 @@ namespace RadioStation.AndroidClient.Media
 
         public RadioPlayer(Context context)
         {
-            _dataSourceFactory = new DefaultHttpDataSourceFactory(nameof(RadioPlayer));
+            _dataSourceFactory = new DefaultHttpDataSourceFactory(nameof(RadioPlayer), CONNECTION_TIMEOUT, CONNECTION_TIMEOUT, true);
             _player = new SimpleExoPlayer.Builder(context).Build();
 
             Listener listener = new Listener();
@@ -48,17 +49,9 @@ namespace RadioStation.AndroidClient.Media
 
         public void Play()
         {
+            _player.Stop(true);
             _player.PlayWhenReady = true;
             _player.Prepare(BuildMediaSource(Settings.RadioUrl));
-
-
-            /*if (State != PlayerState.Playing)
-            {
-                IsPlaying = true;
-
-                _player.PlayWhenReady = true;
-                _player.Prepare(BuildMediaSource(URL));
-            }*/
         }
 
         public void Pause()
@@ -68,15 +61,7 @@ namespace RadioStation.AndroidClient.Media
 
         public void Stop()
         {
-
             _player.Stop(true);
-            /*
-            if (IsPlaying)
-            {
-                IsPlaying = false;
-
-                _player.Stop(true);
-            }*/
         }
 
         private IMediaSource BuildMediaSource(string url)
