@@ -8,22 +8,26 @@ using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Metadata;
 using Com.Google.Android.Exoplayer2.Metadata.Icy;
 using Com.Google.Android.Exoplayer2.Source;
+using Com.Google.Android.Exoplayer2.Source.Hls;
+using Com.Google.Android.Exoplayer2.Source.Smoothstreaming;
 using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.Upstream;
 using Java.IO;
 using RadioStation.AndroidClient.Utils;
 using Xamarin.Essentials;
+using MediaMetadata = Android.Media.MediaMetadata;
 
 namespace RadioStation.AndroidClient.Media
 {
     public class RadioPlayer : IDisposable
     {
         private const int CONNECTION_TIMEOUT = 30000; //milliseconds
+        private const int READ_TIMEOUT = 10000; //milliseconds
         private const int METADATA_DURATION = 100; // milliseconds
         private static readonly TimeSpan RETRY_DELAY = TimeSpan.FromSeconds(1);
 
         private SimpleExoPlayer _player;
-        private IDataSourceFactory _dataSourceFactory;
+        private DefaultHttpDataSource.Factory _dataSourceFactory;
 
         public PlayerState State { get; private set; }
         public MediaMetadata Metadata { get; private set; }
@@ -35,7 +39,11 @@ namespace RadioStation.AndroidClient.Media
 
         public RadioPlayer(Context context)
         {
-            _dataSourceFactory = new DefaultHttpDataSourceFactory(nameof(RadioPlayer), CONNECTION_TIMEOUT, CONNECTION_TIMEOUT, true);
+            _dataSourceFactory = new DefaultHttpDataSource.Factory();
+            _dataSourceFactory.SetUserAgent(nameof(RadioPlayer));
+            _dataSourceFactory.SetConnectTimeoutMs(CONNECTION_TIMEOUT);
+            _dataSourceFactory.SetReadTimeoutMs(READ_TIMEOUT);
+            _dataSourceFactory.SetAllowCrossProtocolRedirects(true);
             _player = new SimpleExoPlayer.Builder(context).Build();
 
             Listener listener = new Listener();
@@ -43,15 +51,16 @@ namespace RadioStation.AndroidClient.Media
             listener.MetadataChanged += OnMetadataUpdated;
 
             _player.AddListener(listener);
-            _player.AddMetadataOutput(listener);
+            //_player.AddMetadataOutput(listener);
             _player.SetWakeMode((int)WakeLockFlags.Partial);
         }
 
         public void Play()
         {
-            _player.Stop(true);
+            //_player.Stop();
             _player.PlayWhenReady = true;
-            _player.Prepare(BuildMediaSource(Settings.RadioUrl));
+            _player.SetMediaSource(BuildMediaSource(Settings.RadioUrl));
+            _player.Prepare();
         }
 
         public void Pause()
@@ -61,15 +70,16 @@ namespace RadioStation.AndroidClient.Media
 
         public void Stop()
         {
-            _player.Stop(true);
+            _player.Stop();
         }
 
         private IMediaSource BuildMediaSource(string url)
         {
-            var uri = Android.Net.Uri.Parse(url);
+            MediaItem mediaItem = MediaItem.FromUri(Android.Net.Uri.Parse(url));
+
             return new ProgressiveMediaSource.Factory(_dataSourceFactory)
                 .SetLoadErrorHandlingPolicy(new ErrorHandler(RETRY_DELAY))
-                .CreateMediaSource(uri);
+                .CreateMediaSource(mediaItem);
         }
 
         private void OnMetadataUpdated(IcyMetadata icyMetadata)
@@ -130,7 +140,7 @@ namespace RadioStation.AndroidClient.Media
             _player.Release();
         }
 
-        private class Listener : Java.Lang.Object, IPlayerEventListener, IMetadataOutput
+        private class Listener : Java.Lang.Object, IPlayer.IListener
         {
             private IcyMetadata _icyMetadata;
 
@@ -194,20 +204,20 @@ namespace RadioStation.AndroidClient.Media
                 RetryDelay = retryDelay;
             }
 
-            public override long GetBlacklistDurationMsFor(int dataType, long loadDurationMs, IOException exception, int errorCount)
+            public override long GetBlacklistDurationMsFor(ILoadErrorHandlingPolicy.LoadErrorInfo loadErrorInfo)
             {
                 return C.TimeUnset;
             }
 
-            public override long GetRetryDelayMsFor(int dataType, long loadDurationMs, IOException exception, int errorCount)
+            public override long GetRetryDelayMsFor(ILoadErrorHandlingPolicy.LoadErrorInfo loadErrorInfo)
             {
                 return RetryDelay.Milliseconds;
             }
 
-            public override int GetMinimumLoadableRetryCount(int dataType)
+            /*public override int GetMinimumLoadableRetryCount(int dataType)
             {
                 return int.MaxValue;
-            }
+            }*/
         }
     }
 }
